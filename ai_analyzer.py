@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-import anthropic
 import json
+import os
+from groq import Groq
 
 
 def analyze_email_for_phishing(subject: str, sender: str, body: str) -> dict:
-    """
-    Send email content to Claude AI and get phishing analysis with score.
-    Returns a dict with: is_phishing, score, reasons, verdict
-    """
-    client = anthropic.Anthropic()
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
     prompt = f"""You are a cybersecurity expert specializing in phishing email detection.
 Analyze the following email and determine if it is a phishing attempt.
@@ -22,38 +19,33 @@ Body:
 {body}
 
 --------------
-Provide your analysis in the following JSON format ONLY (no extra text):
+Provide your analysis in the following JSON format ONLY (no extra text, no markdown):
 {{
   "is_phishing": true or false,
-  "score": <integer from 0 to 100, where 0 = definitely safe, 100 = definitely phishing>,
+  "score": <integer from 0 to 100>,
   "verdict": "<one of: SAFE, SUSPICIOUS, PHISHING>",
   "confidence": "<one of: LOW, MEDIUM, HIGH>",
-  "reasons": [
-    "<reason 1>",
-    "<reason 2>",
-    "<reason 3>"
-  ],
-  "red_flags": [
-    "<specific red flag if any, else empty list>"
-  ],
-  "recommendation": "<short advice for the user>"
+  "reasons": ["<reason 1>", "<reason 2>", "<reason 3>"],
+  "red_flags": ["<red flag if any>"],
+  "recommendation": "<short advice>"
 }}
 
 Scoring guide:
-- 0-25: Likely safe, no phishing indicators
-- 26-50: Some suspicious elements, proceed with caution
-- 51-75: Multiple phishing indicators, likely phishing
-- 76-100: Classic phishing attack, very high confidence"""
+- 0-25: Likely safe
+- 26-50: Suspicious, proceed with caution
+- 51-75: Likely phishing
+- 76-100: Definitely phishing"""
 
-    message = client.messages.create(
-        model="claude-opus-4-5",
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",  # Free open source model
+        messages=[{"role": "user", "content": prompt}],
         max_tokens=1024,
-        messages=[{"role": "user", "content": prompt}]
+        temperature=0.1
     )
 
-    response_text = message.content[0].text.strip()
+    response_text = response.choices[0].message.content.strip()
 
-    # Clean up response if wrapped in markdown code block
+    # Clean markdown if present
     if response_text.startswith("```"):
         lines = response_text.split("\n")
         response_text = "\n".join(lines[1:-1])
@@ -63,7 +55,6 @@ Scoring guide:
 
 
 def format_analysis_report(email_data: dict, analysis: dict) -> str:
-    """Format the analysis result into a readable report."""
     score = analysis.get("score", 0)
     verdict = analysis.get("verdict", "UNKNOWN")
     is_phishing = analysis.get("is_phishing", False)
@@ -72,11 +63,9 @@ def format_analysis_report(email_data: dict, analysis: dict) -> str:
     red_flags = analysis.get("red_flags", [])
     recommendation = analysis.get("recommendation", "")
 
-    # Score bar visualization (ASCII only)
     filled = int(score / 5)
     bar = "#" * filled + "-" * (20 - filled)
 
-    # Verdict indicator (plain text)
     if verdict == "SAFE":
         verdict_icon = "[SAFE]"
     elif verdict == "SUSPICIOUS":
