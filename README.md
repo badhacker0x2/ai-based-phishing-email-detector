@@ -1,1 +1,1006 @@
+[README.html](https://github.com/user-attachments/files/26320411/README.html)
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI-Based Phishing Email Detector — README</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050a0f;
+      --bg2: #0a1520;
+      --bg3: #0d1f30;
+      --accent: #00e5ff;
+      --accent2: #ff3c5f;
+      --accent3: #39ff14;
+      --text: #c8e0f0;
+      --muted: #4a6a80;
+      --border: #1a3a50;
+      --card: #0c1a26;
+      --mono: 'Share Tech Mono', monospace;
+      --head: 'Orbitron', sans-serif;
+      --body: 'Rajdhani', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 17px;
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,229,255,0.015) 2px,
+        rgba(0,229,255,0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Grid background */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 60px 0 40px;
+      position: relative;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(0,229,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .shield-icon {
+      font-size: 64px;
+      display: block;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 20px var(--accent));
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { filter: drop-shadow(0 0 20px var(--accent)); }
+      50% { filter: drop-shadow(0 0 40px var(--accent)) drop-shadow(0 0 80px rgba(0,229,255,0.3)); }
+    }
+
+    .hero h1 {
+      font-family: var(--head);
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #fff;
+      text-shadow: 0 0 30px var(--accent), 0 0 60px rgba(0,229,255,0.3);
+      margin-bottom: 8px;
+    }
+
+    .hero h1 span { color: var(--accent); }
+
+    .tagline {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      margin-bottom: 28px;
+      opacity: 0.8;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 3px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 1px;
+      font-weight: bold;
+      border: 1px solid;
+    }
+
+    .badge-blue { background: rgba(0,100,200,0.2); border-color: #0064c8; color: #60b0ff; }
+    .badge-green { background: rgba(57,255,20,0.1); border-color: #39ff14; color: #39ff14; }
+    .badge-orange { background: rgba(255,140,0,0.15); border-color: #ff8c00; color: #ffb347; }
+    .badge-red { background: rgba(255,60,95,0.15); border-color: var(--accent2); color: #ff7090; }
+
+    /* ── SECTION ── */
+    .section {
+      margin-top: 48px;
+    }
+
+    .section-title {
+      font-family: var(--head);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      opacity: 0.4;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(0,229,255,0.08), inset 0 0 20px rgba(0,229,255,0.02);
+    }
+
+    /* ── AUTHORS ── */
+    .authors-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) { .authors-grid { grid-template-columns: 1fr; } }
+
+    .author-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .author-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0,229,255,0.1);
+    }
+
+    .author-card.lead { border-top: 3px solid var(--accent); }
+    .author-card.debug { border-top: 3px solid var(--accent2); }
+
+    .author-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .author-card.lead .author-avatar { background: rgba(0,229,255,0.1); border: 2px solid var(--accent); }
+    .author-card.debug .author-avatar { background: rgba(255,60,95,0.1); border: 2px solid var(--accent2); }
+
+    .author-name {
+      font-family: var(--head);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .author-role {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    .author-card.lead .author-role { color: var(--accent); }
+    .author-card.debug .author-role { color: var(--accent2); }
+
+    /* ── FEATURES ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .feature-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .feature-item:hover { border-color: rgba(0,229,255,0.4); }
+
+    .feature-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .feature-text {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: #020810;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent3);
+      border-radius: 4px;
+      padding: 20px 24px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: #a8d8a8;
+      overflow-x: auto;
+      margin-top: 12px;
+      line-height: 1.8;
+      position: relative;
+    }
+
+    .code-block .comment { color: var(--muted); }
+    .code-block .cmd { color: var(--accent3); }
+    .code-block .str { color: #ffd700; }
+    .code-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    /* ── TABLE ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      margin-top: 4px;
+    }
+
+    th {
+      background: rgba(0,229,255,0.08);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid rgba(26,58,80,0.5);
+      color: var(--text);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(0,229,255,0.03); }
+
+    /* ── SCORE TABLE ── */
+    .score-row-safe td:first-child { color: var(--accent3); font-weight: bold; font-family: var(--mono); }
+    .score-row-sus td:first-child { color: #ffd700; font-weight: bold; font-family: var(--mono); }
+    .score-row-likely td:first-child { color: #ff8c00; font-weight: bold; font-family: var(--mono); }
+    .score-row-phish td:first-child { color: var(--accent2); font-weight: bold; font-family: var(--mono); }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .flow-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 48px;
+      flex-shrink: 0;
+    }
+
+    .flow-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 10px var(--accent);
+      flex-shrink: 0;
+      margin-top: 18px;
+    }
+
+    .flow-line {
+      flex: 1;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--border));
+      margin: 0 auto;
+    }
+
+    .flow-step:last-child .flow-line { display: none; }
+
+    .flow-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 14px 20px;
+      margin: 8px 0 8px 12px;
+      flex: 1;
+    }
+
+    .flow-file {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .flow-desc {
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    /* ── ERROR SECTION ── */
+    .error-card {
+      background: rgba(255,60,95,0.05);
+      border: 1px solid rgba(255,60,95,0.3);
+      border-left: 3px solid var(--accent2);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
+    }
+
+    .error-title {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--accent2);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .error-title::before {
+      content: '[ERR]';
+      background: rgba(255,60,95,0.2);
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 10px;
+    }
+
+    .error-fix {
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .error-credit {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent2);
+      opacity: 0.7;
+      letter-spacing: 1px;
+    }
+
+    /* ── SECURITY NOTE ── */
+    .security-note {
+      background: rgba(255,60,95,0.06);
+      border: 1px solid rgba(255,60,95,0.25);
+      border-radius: 4px;
+      padding: 16px 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      margin-top: 12px;
+    }
+
+    .security-note-icon { font-size: 22px; flex-shrink: 0; }
+    .security-note-text { font-size: 14px; color: #ff9090; line-height: 1.6; }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      line-height: 2;
+    }
+
+    .footer-text span { color: var(--accent); }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px 28px;
+    }
+
+    .toc-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .toc a {
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 15px;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(26,58,80,0.4);
+      transition: color 0.2s, padding-left 0.2s;
+    }
+
+    .toc a:last-child { border-bottom: none; }
+
+    .toc a:hover {
+      color: var(--accent);
+      padding-left: 8px;
+    }
+
+    .toc a::before {
+      content: '> ';
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    p { margin-bottom: 12px; color: var(--text); font-size: 16px; }
+
+    strong { color: #fff; }
+
+    /* Animate in */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero, .section { animation: fadeUp 0.6s ease both; }
+    .section:nth-child(2) { animation-delay: 0.1s; }
+    .section:nth-child(3) { animation-delay: 0.2s; }
+    .section:nth-child(4) { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <span class="shield-icon">🛡️</span>
+    <h1>AI-Based Phishing Email Detector<span>-AI</span></h1>
+    <div class="tagline">// AI-POWERED PHISHING EMAIL DETECTOR //</div>
+    <div class="badges">
+      <span class="badge badge-blue">Python 3.10+</span>
+      <span class="badge badge-green">Open Source</span>
+      <span class="badge badge-orange">Groq LLaMA 3.3</span>
+      <span class="badge badge-red">Kali Linux</span>
+      <span class="badge badge-blue">MIT License</span>
+    </div>
+    <p style="color: var(--muted); font-size: 15px; max-width: 600px; margin: 0 auto;">
+      Reads your emails, passes them to an open-source AI, and determines whether they are phishing attempts — with a detailed risk score and full analysis report.
+    </p>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="section">
+    <div class="section-title">Table of Contents</div>
+    <div class="toc">
+      <div class="toc-title">// navigation</div>
+      <a href="#authors">Authors</a>
+      <a href="#features">Features</a>
+      <a href="#structure">Project Structure</a>
+      <a href="#requirements">Requirements</a>
+      <a href="#installation">Installation</a>
+      <a href="#configuration">Configuration</a>
+      <a href="#usage">Usage</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#scoring">Scoring Guide</a>
+      <a href="#sample-output">Sample Output</a>
+      <a href="#error-handling">Error Handling</a>
+      <a href="#security">Security</a>
+    </div>
+  </div>
+
+  <!-- AUTHORS -->
+  <div class="section" id="authors">
+    <div class="section-title">Authors</div>
+    <div class="authors-grid">
+      <div class="author-card lead">
+        <div class="author-avatar">👨‍💻</div>
+        <div class="author-name">Md. Munkasiur Haque</div>
+        <div class="author-role">// Project Lead &amp; Core Development</div>
+      </div>
+      <div class="author-card debug">
+        <div class="author-avatar">🔧</div>
+        <div class="author-name">Rahat Sahriar Rafi</div>
+        <div class="author-role">// Error Handling &amp; Debugging</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="section" id="features">
+    <div class="section-title">Features</div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <span class="feature-icon">📬</span>
+        <div class="feature-text">Reads emails via IMAP — supports Gmail, Outlook, and more</div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-text">Powered by LLaMA 3.3 70B via Groq — free &amp; open source</div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">📊</span>
+        <div class="feature-text">Phishing risk score from 0 to 100 with detailed breakdown</div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🚦</span>
+        <div class="feature-text">Verdict: SAFE, SUSPICIOUS, or PHISHING with confidence level</div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🚩</span>
+        <div class="feature-text">Lists specific red flags and reasons for every verdict</div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🧪</span>
+        <div class="feature-text">Demo mode — test without any email credentials</div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🐧</span>
+        <div class="feature-text">Fully ASCII-compatible — works perfectly on Kali Linux</div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🔑</span>
+        <div class="feature-text">No credit card required — 100% free API via Groq</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT STRUCTURE -->
+  <div class="section" id="structure">
+    <div class="section-title">Project Structure</div>
+    <div class="card">
+      <div class="code-label">// directory tree</div>
+      <div class="code-block">
+<span class="cmd">ai-based-phishing-email-detector/</span><br>
+├── <span class="cmd">main.py</span>           <span class="comment"># Entry point, user interaction &amp; report output</span><br>
+├── <span class="cmd">email_reader.py</span>   <span class="comment"># Connects to email via IMAP, fetches messages</span><br>
+├── <span class="cmd">ai_analyzer.py</span>    <span class="comment"># Sends email to AI, parses phishing analysis</span><br>
+├── <span class="cmd">requirements.txt</span>  <span class="comment"># Python dependencies</span><br>
+├── <span class="cmd">.env</span>              <span class="comment"># API key storage (NEVER commit this)</span><br>
+├── <span class="cmd">.gitignore</span>        <span class="comment"># Excludes .env and venv from GitHub</span><br>
+└── <span class="cmd">README.html</span>       <span class="comment"># This file</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- REQUIREMENTS -->
+  <div class="section" id="requirements">
+    <div class="section-title">Requirements</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Requirement</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Python</strong></td><td>3.10 or higher</td></tr>
+          <tr><td><strong>Groq API Key</strong></td><td>Free — no credit card required</td></tr>
+          <tr><td><strong>Internet</strong></td><td>Required for AI analysis and IMAP</td></tr>
+          <tr><td><strong>Gmail (optional)</strong></td><td>IMAP enabled + App Password for real email mode</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- INSTALLATION -->
+  <div class="section" id="installation">
+    <div class="section-title">Installation</div>
+
+    <div class="card">
+      <div class="code-label">// step 1 — clone the repository</div>
+      <div class="code-block">
+<span class="comment"># Clone the project</span><br>
+<span class="cmd">git clone</span> <span class="str">https://github.com/your-username/AI-Based Phishing Email Detector.git</span><br>
+<span class="cmd">cd</span> AI-Based Phishing Email Detector
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-label">// step 2 — create virtual environment</div>
+      <div class="code-block">
+<span class="cmd">python3 -m venv</span> .venv<br>
+<span class="cmd">source</span> .venv/bin/activate<br>
+<span class="comment"># Terminal will show (.venv) prefix when active</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-label">// step 3 — install dependencies</div>
+      <div class="code-block">
+<span class="cmd">pip install</span> groq
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIGURATION -->
+  <div class="section" id="configuration">
+    <div class="section-title">Configuration</div>
+
+    <p>Get your free Groq API key from <strong>https://console.groq.com</strong> — sign up with Google or GitHub, no credit card needed.</p>
+
+    <div class="card">
+      <div class="code-label">// option A — temporary (current session)</div>
+      <div class="code-block">
+<span class="cmd">export</span> GROQ_API_KEY=<span class="str">"gsk_your_key_here"</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-label">// option B — permanent (recommended for kali linux)</div>
+      <div class="code-block">
+<span class="cmd">echo</span> <span class="str">'export GROQ_API_KEY="gsk_your_key_here"'</span> &gt;&gt; ~/.zshrc<br>
+<span class="cmd">source</span> ~/.zshrc
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-label">// option C — .env file</div>
+      <div class="code-block">
+<span class="cmd">echo</span> <span class="str">'GROQ_API_KEY="gsk_your_key_here"'</span> &gt; .env
+      </div>
+    </div>
+
+    <div class="security-note">
+      <span class="security-note-icon">⚠️</span>
+      <div class="security-note-text">
+        <strong style="color: #ff7090;">Security Warning:</strong> Never share your API key publicly or commit it to GitHub. If your key is accidentally exposed, regenerate it immediately at console.groq.com/keys.
+      </div>
+    </div>
+  </div>
+
+  <!-- USAGE -->
+  <div class="section" id="usage">
+    <div class="section-title">Usage</div>
+
+    <div class="card">
+      <div class="code-label">// run the tool</div>
+      <div class="code-block">
+<span class="comment"># Activate venv first</span><br>
+<span class="cmd">source</span> .venv/bin/activate<br><br>
+<span class="comment"># Run</span><br>
+<span class="cmd">python</span> main.py
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 16px;">
+      <div class="code-label">// interactive prompt</div>
+      <div class="code-block">
+============================================================<br>
+&nbsp;&nbsp; [AI-Based Phishing Email Detector] AI-POWERED PHISHING EMAIL DETECTOR<br>
+============================================================<br>
+Choose mode:<br>
+&nbsp;&nbsp;[1] Analyze real emails (requires credentials)<br>
+&nbsp;&nbsp;[2] Demo mode (sample emails)<br>
+Enter choice (1 or 2): <span class="cmd">_</span>
+      </div>
+    </div>
+
+    <p style="margin-top: 16px;"><strong>Demo Mode</strong> runs 3 built-in sample emails (phishing + safe) with no credentials needed — great for testing and GitHub demos.</p>
+    <p><strong>Real Email Mode</strong> connects to your inbox via IMAP and analyzes your latest emails using AI.</p>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section" id="how-it-works">
+    <div class="section-title">How It Works</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-dot"></div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-file">// user input</div>
+          <div class="flow-desc">Choose demo mode or enter email credentials (IMAP)</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-dot"></div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-file">email_reader.py</div>
+          <div class="flow-desc">Connects via IMAP, fetches email subject and body</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-dot"></div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-file">ai_analyzer.py</div>
+          <div class="flow-desc">Sends email content to Groq (LLaMA 3.3 70B) with cybersecurity prompt</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-dot"></div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-file">// AI response (JSON)</div>
+          <div class="flow-desc">Returns score, verdict, confidence, reasons, red flags</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-dot"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-file">main.py</div>
+          <div class="flow-desc">Formats and prints the full analysis report to terminal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCORING -->
+  <div class="section" id="scoring">
+    <div class="section-title">Scoring Guide</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Score Range</th><th>Verdict</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr class="score-row-safe">
+            <td>0 — 25</td>
+            <td>SAFE</td>
+            <td>No phishing indicators detected</td>
+          </tr>
+          <tr class="score-row-sus">
+            <td>26 — 50</td>
+            <td>SUSPICIOUS</td>
+            <td>Some suspicious elements, proceed with caution</td>
+          </tr>
+          <tr class="score-row-likely">
+            <td>51 — 75</td>
+            <td>SUSPICIOUS</td>
+            <td>Multiple phishing indicators present</td>
+          </tr>
+          <tr class="score-row-phish">
+            <td>76 — 100</td>
+            <td>PHISHING</td>
+            <td>Classic phishing attack, very high confidence</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SAMPLE OUTPUT -->
+  <div class="section" id="sample-output">
+    <div class="section-title">Sample Output</div>
+    <div class="card">
+      <div class="code-label">// terminal output</div>
+      <div class="code-block" style="color: #c8e0f0;">
+============================================================<br>
+EMAIL ANALYSIS REPORT<br>
+============================================================<br>
+From&nbsp;&nbsp;&nbsp;&nbsp;: <span class="str">security@paypa1-alert.com</span><br>
+Subject : <span class="str">URGENT: Your account has been suspended!</span><br>
+============================================================<br><br>
+<span style="color: var(--accent2);">[PHISHING]</span><br>
+VERDICT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span style="color: var(--accent2);">PHISHING</span><br>
+PHISHING SCORE : [<span style="color: var(--accent2);">####################</span>] <span style="color: var(--accent2);">97/100</span><br>
+IS PHISHING&nbsp;&nbsp;&nbsp;&nbsp;: <span style="color: var(--accent2);">YES - DANGER</span><br>
+CONFIDENCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span style="color: var(--accent2);">HIGH</span><br><br>
+REASONS:<br>
+&nbsp;&nbsp;1. Sender domain mimics PayPal with character substitution<br>
+&nbsp;&nbsp;2. Creates urgency with account deletion threats<br>
+&nbsp;&nbsp;3. Requests highly sensitive personal and financial data<br><br>
+RED FLAGS:<br>
+&nbsp;&nbsp;- Domain spoofing: paypa1 instead of paypal<br>
+&nbsp;&nbsp;- Requests SSN, credit card, and password together<br>
+&nbsp;&nbsp;- 24-hour deadline pressure tactic<br><br>
+RECOMMENDATION:<br>
+&nbsp;&nbsp;<span class="str">Delete immediately. Never provide financial data via email links.</span><br>
+============================================================<br><br>
+<span style="color: var(--accent3);">SUMMARY</span><br>
+============================================================<br>
+&nbsp;&nbsp;Total Emails Analyzed : 3<br>
+&nbsp;&nbsp;Phishing Detected&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 2<br>
+&nbsp;&nbsp;Safe Emails&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 1<br>
+&nbsp;&nbsp;Average Risk Score&nbsp;&nbsp;&nbsp;&nbsp;: 68.3/100<br><br>
+&nbsp;&nbsp;<span style="color: var(--accent2);">[WARNING] 2 phishing email(s) detected!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERROR HANDLING -->
+  <div class="section" id="error-handling">
+    <div class="section-title">Error Handling</div>
+    <p>All error handling and debugging for this project was completed by <strong>Rahat Sahriar Rafi</strong>.</p>
+
+    <div class="error-card">
+      <div class="error-title">ModuleNotFoundError: No module named 'groq'</div>
+      <div class="error-fix">Virtual environment is not activated or groq is not installed inside it.</div>
+      <div class="code-block" style="margin-top: 8px;">
+<span class="cmd">source</span> .venv/bin/activate<br>
+<span class="cmd">pip install</span> groq
+      </div>
+      <div class="error-credit">// fixed by: Rahat Sahriar Rafi</div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-title">GroqError: api_key must be set</div>
+      <div class="error-fix">The GROQ_API_KEY environment variable was not set before running the script.</div>
+      <div class="code-block" style="margin-top: 8px;">
+<span class="cmd">export</span> GROQ_API_KEY=<span class="str">"gsk_your_key_here"</span>
+      </div>
+      <div class="error-credit">// fixed by: Rahat Sahriar Rafi</div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-title">SyntaxError: invalid character (emoji/unicode)</div>
+      <div class="error-fix">Kali Linux terminals may not support Unicode block characters or emoji in source files. All emoji and special characters replaced with ASCII equivalents throughout the codebase.</div>
+      <div class="error-credit">// fixed by: Rahat Sahriar Rafi</div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-title">externally-managed-environment (pip on Kali)</div>
+      <div class="error-fix">Kali Linux prevents system-wide pip installs. Always use a virtual environment.</div>
+      <div class="code-block" style="margin-top: 8px;">
+<span class="cmd">python3 -m venv</span> .venv<br>
+<span class="cmd">source</span> .venv/bin/activate<br>
+<span class="cmd">pip install</span> groq
+      </div>
+      <div class="error-credit">// fixed by: Rahat Sahriar Rafi</div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-title">IMAP Authentication Error</div>
+      <div class="error-fix">Make sure IMAP is enabled in Gmail settings and you are using an App Password, not your regular Gmail password.</div>
+      <div class="error-credit">// fixed by: Rahat Sahriar Rafi</div>
+    </div>
+  </div>
+
+  <!-- SECURITY -->
+  <div class="section" id="security">
+    <div class="section-title">Security Best Practices</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Practice</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>API Key Storage</td><td>Use .env file or environment variable — never hardcode</td></tr>
+          <tr><td>GitHub Safety</td><td>Add .env and .venv/ to .gitignore before pushing</td></tr>
+          <tr><td>Key Exposure</td><td>Regenerate immediately at console.groq.com/keys</td></tr>
+          <tr><td>Gmail Password</td><td>Use App Passwords, not your main Gmail password</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top: 16px;">
+      <div class="code-label">// recommended .gitignore</div>
+      <div class="code-block">
+.env<br>
+.venv/<br>
+venv/<br>
+__pycache__/<br>
+*.pyc<br>
+*.pyo
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-text">
+      Built with <span>Python</span> + <span>Groq LLaMA 3.3 70B</span> — free, open source, and fast.<br>
+      Core Development: <span>Md. Munkasiur Haque</span> &nbsp;|&nbsp; Error Handling: <span>Rahat Sahriar Rafi</span><br><br>
+      <span style="color: var(--muted);">MIT License — AI-Based Phishing Email Detector &copy; 2025</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
